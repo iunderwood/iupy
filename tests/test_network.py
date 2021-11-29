@@ -1,5 +1,5 @@
 import logging
-import iupy
+from src import iupy
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
