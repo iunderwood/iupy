@@ -2,7 +2,7 @@
 
 ## Change Log
 
-### 0.1.2 - 2022-07-12 - Minor Updates
+### 0.1.2 - 2022-07- - Minor Updates
 * Modify: Expand compatibility to Python 3.10
 
 ### 0.1.1 - 2021-11-28 - Minor Updates
