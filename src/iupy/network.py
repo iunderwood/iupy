@@ -190,21 +190,6 @@ def v4_wildcard(v4_mask):
     return wildcard_mask
 
 
-def sap_assembler(**kwargs):
 
-    sap = dict()
 
-    # Initial population of the dictionary.
-    sap['V'] = 1
-    sap['A'] = kwargs['ipv6']
-    sap['R'] = False
-    sap['T'] = kwargs['announce']
-    sap['E'] = kwargs['encrypted']
-    sap['C'] = kwargs['compressed']
-    sap['auth_len'] = len(kwargs['opt_auth_data'])
-    sap['msg_id_hash'] = 0  # hash src ID and Payload)
-    sap['originating_source'] = kwargs['src_ip']
-    sap['opt_auth_data'] = kwargs['auth_data']
-    sap['opt_payload_type'] = "application/sdp"
-    sap['payload'] = kwargs['payload']
 
