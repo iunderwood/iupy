@@ -191,6 +191,40 @@ def v4_wildcard(v4_mask):
     return wildcard_mask
 
 
+def aclv4_hostmask(host_mask):
+    """
+    Returns a Cisco friendly text for a given host and netmask.
+
+    :param host_mask:
+    :return:
+    """
+    logger = logging.getLogger("iupy/network/v4_wildcard")
+
+    logger.debug("Input: {}".format(host_mask))
+
+    ip_info = host_mask.split("/")
+
+    # Host Exceptions
+    try:
+        # Check /32 host exception
+        if int(ip_info[1]) == 32:
+            output = "host {}".format(ip_info[0])
+            return output
+    except IndexError:
+        # Host if no mask was provided
+        output = "host {}".format(ip_info[0])
+        return output
+
+    # Get the wildcard mask
+    wildcard = v4_wildcard(ip_info[1])
+
+    # Return the valid host wildcard value, otherwise return None.
+    if wildcard is not None:
+        return "{} {}".format(ip_info[0], wildcard)
+    else:
+        return None
+
+
 
 
 
