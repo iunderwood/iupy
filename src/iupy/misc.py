@@ -38,3 +38,28 @@ def text_header(**kwargs):
         header += "{}\n".format(comment)
 
     return header
+
+
+def merge_dict(ad, bd):
+    """
+    Function that merges two dictionaries together, uses recursion to handle the nesting.
+
+    Returns an empty dictionary if any input is not a dictionary.
+
+    Inspired by:
+    https://stackoverflow.com/questions/43797333/how-to-merge-two-nested-dict-in-python
+
+    :param ad:
+    :param bd:
+    :return:
+    """
+    if not isinstance(ad, dict) or not isinstance(bd, dict):
+        return {}
+
+    for key in bd:
+        if key in ad:
+            ad[key] = merge_dict(ad[key], bd[key])
+        else:
+            ad[key] = bd[key]
+
+    return ad
