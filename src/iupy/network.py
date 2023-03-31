@@ -225,8 +225,38 @@ def aclv4_hostmask(host_mask):
         return None
 
 
+def routev4_hostmask(host_mask):
+    """
+    Returns a Cisco friendly text for a given host and netmask.
 
+    :param host_mask:
+    :return:
+    """
+    _logger = logging.getLogger("iupy/network/routev4")
 
+    _logger.debug("Input: {}".format(host_mask))
+
+    ip_info = host_mask.split("/")
+
+    # Host Exceptions
+    try:
+        # Check /32 host exception
+        if int(ip_info[1]) == 32:
+            mask = v4_bits_to_mask(32)
+            return "{} {}".format(ip_info[0], mask)
+    except IndexError:
+        # Host if no mask was provided
+        mask = v4_bits_to_mask(32)
+        return "{} {}".format(ip_info[0], mask)
+
+    # Get the wildcard mask
+    mask = v4_wildcard(ip_info[1])
+
+    # Return the valid host wildcard value, otherwise return None.
+    if mask is not None:
+        return "{} {}".format(ip_info[0], mask)
+    else:
+        return None
 
 
 def sap_segment(*, version=1, src_ip_addr=None, reserved=False, announce=True, encrypted=False, compressed=False,
