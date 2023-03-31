@@ -2,6 +2,7 @@ import ipaddress
 import logging
 import re
 import socket
+import struct
 
 # Default module logger
 
@@ -193,3 +194,114 @@ def v4_wildcard(v4_mask):
 
 
 
+
+def sap_segment(*, version=1, src_ip_addr=None, reserved=False, announce=True, encrypted=False, compressed=False,
+                auth_data=None, id_hash=None, payload_type=None, payload=None):
+    """
+    This function returns a SAP segment based on RFC-2974.
+
+    The segment generated strictly matches the format of the packet only.  it is possible to generate a
+    segment that is not RFC-compliant.  For example, generating a SAP announcement with version 6, which
+    is not a valid value.
+
+    https://www.rfc-editor.org/rfc/rfc2974
+    """
+
+    _logger = logging.getLogger("iupy/network/sap_segment")
+
+    # Segment Header - SAP Version
+    if type(version) is not int:
+        _logger.debug("SAP Version {} must be an integer value.".format(version))
+        return None
+    if version < 0 or version > 7:
+        _logger.debug("SAP Version {} is not between 0 and 7.".format(version))
+        return None
+    hdr_v = format(version, '0>3b')   # Version
+
+    # Segment Header - Address Type
+    try:
+        ip_addr_object = ipaddress.ip_address(src_ip_addr)
+    except ValueError:
+        _logger.debug("{} is not a valid IP address.".format(src_ip_addr))
+        return None
+    if ip_addr_object.version == 6:
+        hdr_a = 1
+    else:
+        hdr_a = 0
+
+    # Segment Header - Reserved Bit
+    if reserved is True:
+        hdr_r = 1
+    else:
+        hdr_r = 0
+
+    # Segment Header - Message Type
+    if announce is True:
+        hdr_t = 0
+    else:
+        hdr_t = 1
+
+    # Segment Header - Encryption
+    if encrypted is True:
+        hdr_e = 1
+    else:
+        hdr_e = 0
+
+    # Segment Header - Compression
+    if compressed is True:
+        hdr_c = 1
+    else:
+        hdr_c = 0
+
+    # Segment Header - First Byte
+    hdr_bits = "{}{}{}{}{}{}".format(hdr_v, hdr_a, hdr_r, hdr_t, hdr_e, hdr_c)
+    hdr_byte = struct.pack('b', int(hdr_bits, 2))
+
+    # Authentication length as a number of 4-byte words.
+    if auth_data is not None:
+        if len(auth_data) % 4 != 0:
+            _logger.debug("Authentication data length must be a multiple of 4.")
+            return None
+        hdr_auth_length = struct.pack('b', (len(auth_data) // 4))
+    else:
+        hdr_auth_length = struct.pack('b', 0)
+
+    # Message ID Hash
+    if (id_hash is None) or (type(id_hash) is not int):
+        _logger.debug("ID Hash must be an integer between 0 and 65535")
+        _logger.debug("{}, type {}".format(id_hash, type(id_hash)))
+        return None
+    if id_hash < 0 or id_hash > 65535:
+        _logger.debug("ID hash is out of range.")
+        return None
+    hdr_id_hash = struct.pack('H', id_hash)
+
+    # Originating Source IP Address
+    hdr_src_addr = ip_addr_object.packed
+
+    # Start building the segment.
+    segment = hdr_byte + hdr_auth_length + hdr_id_hash + hdr_src_addr
+
+    # Optional - Authentication Data
+    if auth_data is None:
+        _logger.debug("No authentication data provided.")
+    elif type(auth_data) is not bytes:
+        _logger.debug("Authentication data must be of bytes type.  Skipping.")
+    else:
+        segment += auth_data
+
+    # Optional - Payload Type
+    if len(payload_type) == 0:
+        _logger.debug("No payload type provided.")
+    else:
+        segment += bytes(payload_type, 'utf-8')
+        segment += b'\x00'
+
+    # Payload
+    if payload is None:
+        _logger.debug("Payload cannot be empty.")
+        return None
+    else:
+        segment += bytes(payload, 'utf-8')
+
+    return segment
