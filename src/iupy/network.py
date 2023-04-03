@@ -29,7 +29,7 @@ def get_my_ip(destination=None, **kwargs):
     :return:
     """
 
-    logger = logging.getLogger("iupy/network/get_my_ip")
+    _logger = logging.getLogger("iupy/network/get_my_ip")
 
     # Only do an IPv4 socket if specified, otherwise leverage dual-stack.
 
@@ -51,7 +51,7 @@ def get_my_ip(destination=None, **kwargs):
         s.connect((test_ip, 1))
         my_ip = ipaddress.ip_address(s.getsockname()[0])
     except socket.error as error_message:
-        logger.debug("Socket error for {} / {}".format(test_ip, error_message))
+        _logger.debug("Socket error for {} / {}".format(test_ip, error_message))
         my_ip = None
     finally:
         s.close()
@@ -68,7 +68,7 @@ def get_my_ip(destination=None, **kwargs):
         if my_ip.ipv4_mapped and kwargs.get('version', 0) != 6:
             my_ip = ipaddress.IPv4Address(int(ipaddress.ip_address(str(my_ip).replace('::ffff:', '::'))))
 
-    logger.debug("Source address to reach {} is {}.".format(test_ip, my_ip))
+    _logger.debug("Source address to reach {} is {}.".format(test_ip, my_ip))
 
     return str(my_ip)
 
