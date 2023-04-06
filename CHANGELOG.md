@@ -2,6 +2,18 @@
 
 ## Change Log
 
+### 0.2.1 - 2023-04-06 - Fixes
+* Modify: Fix get_my_ip to make fewer assumptions given a destination if one is provided.
+* Modify: test_sap.py - Corrected the SAP announcement.
+* Modify: Removed Python 3.7 from the setup.cfg.  I'm not sure it'll work.
+* Add: v0.2.0 changelog entries!
+
+### 0.2.0 - 2023-04-03 - Minor Update
+* Add: sap_segment
+* Add: aclv4_hostmask
+* Add: routerv4_hostmask
+* add: merge_dict
+
 ### 0.1.2 - 2022-07- - Minor Updates
 * Modify: Expand compatibility to Python 3.10
 
