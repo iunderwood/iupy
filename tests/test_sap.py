@@ -20,8 +20,9 @@ if __name__ == "__main__":
                    "i=DVBlast Video Network\r\n" \
                    "c=IN IP4 239.255.1.1/255\r\n" \
                    "t=0 0\r\n" \
-                   "a=recvonly\r\na=type:broadcast\r\n" \
-                   "a=source-filter: incl IN * 172.30.0.141\r\n" \
+                   "a=recvonly\r\n" \
+                   "a=type:broadcast\r\n" \
+                   "a=source-filter: incl IN IP4 * 172.30.0.141\r\n" \
                    "m=video 28001 udp mpeg\r\n".format(datetime_int, datetime_int)
 
     sap_struct = iupy.sap_segment(version=1, src_ip_addr=myip, id_hash=2,
