@@ -11,7 +11,7 @@ logger = logging.getLogger("iupy/network")
 
 # Host Utilities
 
-def get_my_ip(destination=None, **kwargs):
+def get_my_ip(destination=None):
     """
     This function returns a string which contains the host's source IP address for connections to a given destination.
     In the absensce of a destination, well-know address of 4.2.2.1 will be used to make the determination.
@@ -31,22 +31,19 @@ def get_my_ip(destination=None, **kwargs):
 
     _logger = logging.getLogger("iupy/network/get_my_ip")
 
-    # Only do an IPv4 socket if specified, otherwise leverage dual-stack.
+    # Specify the destination as well-known 4.2.2.1 if no value is specified:
+    if destination:
+        test_ip = socket.gethostbyname(destination)
+    else:
+        test_ip = socket.gethostbyname("4.2.2.1")
 
-    if kwargs.get('version', 0) == 4:
+    # Use of dual-stack for IPv4 addresses barfs in Python 3.8 open the socket based on the specific test IP.
+    if ipaddress.ip_address(test_ip).version == 4:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     else:
         s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
 
-    # Specify the destination as well-known 4.2.2.1 if no value is specified:
-
-    if destination:
-        test_ip = destination
-    else:
-        test_ip = "4.2.2.1"
-
     # Open our socket to the specified destination.
-
     try:
         s.connect((test_ip, 1))
         my_ip = ipaddress.ip_address(s.getsockname()[0])
@@ -57,16 +54,14 @@ def get_my_ip(destination=None, **kwargs):
         s.close()
 
     # Return None from the previous socket error.
-
     if not my_ip:
         return None
 
     # If this is IPv6, check and see if we have a mapped IPv4 object.
     # Convert this to an IPv4 address if version 6 was not explicitly specified.
 
-    if my_ip.version == 6:
-        if my_ip.ipv4_mapped and kwargs.get('version', 0) != 6:
-            my_ip = ipaddress.IPv4Address(int(ipaddress.ip_address(str(my_ip).replace('::ffff:', '::'))))
+    if my_ip.version == 6 and my_ip.ipv4_mapped:
+        my_ip = ipaddress.IPv4Address(int(ipaddress.ip_address(str(my_ip).replace('::ffff:', '::'))))
 
     _logger.debug("Source address to reach {} is {}.".format(test_ip, my_ip))
 
